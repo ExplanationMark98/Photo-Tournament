@@ -70,9 +70,7 @@ function enableZoomAndPan(container, img) {
   observer.observe(container, { childList: true });
 }
 
-
-
-
+// ------------------ Landing Page ------------------
 function showLanding() {
   app.innerHTML = `
     <div class="screen">
@@ -84,6 +82,7 @@ function showLanding() {
   document.getElementById("startBtn").onclick = showUpload;
 }
 
+// ------------------ Upload Page ------------------
 function showUpload() {
   app.innerHTML = `
     <div class="screen">
@@ -113,6 +112,7 @@ function showUpload() {
   };
 }
 
+// ------------------ Comparison Page ------------------
 function showComparison() {
   const match = getCurrentMatch(tournament);
 
@@ -124,28 +124,30 @@ function showComparison() {
     return;
   }
 
-app.innerHTML = `
-  <div class="comparison">
-    <div class="progress">Round ${currentRound} - Match ${currentMatch + 1} of ${rounds[currentRound].length}</div>
-    <div class="images">
-      <div id="left" class="choice left"><img src="${pair[0].url}" /><button onclick="chooseWinner(0)">Left Wins</button></div>
-      <div id="right" class="choice right"><img src="${pair[1].url}" /><button onclick="chooseWinner(1)">Right Wins</button></div>
+  app.innerHTML = `
+    <div class="comparison">
+      <div class="progress">Choose the winner</div>
+      <div class="images">
+        <div id="left" class="choice left"><img src="${match.left.url}" /></div>
+        <div id="right" class="choice right"><img src="${match.right.url}" /></div>
+      </div>
     </div>
-  </div>
-`;
-const leftContainer = document.getElementById("left");
-const rightContainer = document.getElementById("right");
+  `;
 
-const leftImg = leftContainer.querySelector("img");
-const rightImg = rightContainer.querySelector("img");
+  const leftContainer = document.getElementById("left");
+  const rightContainer = document.getElementById("right");
 
-enableZoomAndPan(leftContainer, leftImg);
-enableZoomAndPan(rightContainer, rightImg);
+  const leftImg = leftContainer.querySelector("img");
+  const rightImg = rightContainer.querySelector("img");
 
-  document.getElementById("left").onclick = () => pick(match.left, match.right);
-  document.getElementById("right").onclick = () => pick(match.right, match.left);
+  enableZoomAndPan(leftContainer, leftImg);
+  enableZoomAndPan(rightContainer, rightImg);
+
+  leftContainer.onclick = () => pick(match.left, match.right);
+  rightContainer.onclick = () => pick(match.right, match.left);
 }
 
+// ------------------ Pick Winner ------------------
 function pick(winner, loser) {
   recordWin(tournament, winner, loser);
   const result = advanceMatch(tournament);
@@ -157,6 +159,7 @@ function pick(winner, loser) {
   }
 }
 
+// ------------------ Winner Page ------------------
 function showWinner(winner) {
   app.innerHTML = `
     <div class="screen">
@@ -173,6 +176,5 @@ function showWinner(winner) {
   `;
 }
 
-
+// ------------------ Initialize ------------------
 showLanding();
-
