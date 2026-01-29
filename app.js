@@ -124,23 +124,15 @@ function showComparison() {
     return;
   }
 
-  app.innerHTML = `
-    <div class="screen comparison">
-      <div class="progress">
-        Round ${tournament.round} • Match ${tournament.currentMatchIndex + 1} of ${tournament.matches.length}
-      </div>
-      <div class="images">
-        <div class="choice" id="left">
-          <img src="${match.left.url}" />
-          <button>Left wins</button>
-        </div>
-        <div class="choice" id="right">
-          <img src="${match.right.url}" />
-          <button>Right wins</button>
-        </div>
-      </div>
+app.innerHTML = `
+  <div class="comparison">
+    <div class="progress">Round ${currentRound} - Match ${currentMatch + 1} of ${rounds[currentRound].length}</div>
+    <div class="images">
+      <div id="left" class="choice left"><img src="${pair[0].url}" /><button onclick="chooseWinner(0)">Left Wins</button></div>
+      <div id="right" class="choice right"><img src="${pair[1].url}" /><button onclick="chooseWinner(1)">Right Wins</button></div>
     </div>
-  `;
+  </div>
+`;
 const leftContainer = document.getElementById("left");
 const rightContainer = document.getElementById("right");
 
