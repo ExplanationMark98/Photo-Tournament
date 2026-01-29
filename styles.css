@@ -57,14 +57,25 @@ button:disabled {
 }
 
 .choice.left {
+  position: absolute;
+  top: 0;
   left: 0;
-  right: 50%; /* stops at center */
+  width: 50vw;   /* exactly half viewport width */
+  height: 100%;
+  overflow: hidden;
+  background: #000;
 }
 
 .choice.right {
-  left: 50%;  /* starts at center */
-  right: 0;
+  position: absolute;
+  top: 0;
+  left: 50vw;    /* starts at center */
+  width: 50vw;   /* exactly half viewport width */
+  height: 100%;
+  overflow: hidden;
+  background: #000;
 }
+
 
 .choice img {
   width: 100%;
