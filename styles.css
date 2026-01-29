@@ -9,7 +9,6 @@ body {
   color: #eee;
 }
 
-
 .screen {
   max-width: 1200px;
   margin: auto;
@@ -40,42 +39,22 @@ button:disabled {
 }
 
 .comparison .images {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  background: #000;
-  overflow: hidden;
+  display: flex;
+  width: 100%;
+  height: 80vh;
+  margin: 0 auto;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .choice {
-  position: absolute;
-  top: 0;
-  bottom: 0;
+  flex: 1;
+  max-width: 45%;
+  position: relative;
   overflow: hidden;
   background: #000;
 }
-
-.choice.left {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50vw;   /* exactly half viewport width */
-  height: 100%;
-  overflow: hidden;
-  background: #000;
-}
-
-.choice.right {
-  position: absolute;
-  top: 0;
-  left: 50vw;    /* starts at center */
-  width: 50vw;   /* exactly half viewport width */
-  height: 100%;
-  overflow: hidden;
-  background: #000;
-}
-
 
 .choice img {
   width: 100%;
@@ -85,7 +64,6 @@ button:disabled {
   transition: transform 0.1s ease-out;
   display: block;
 }
-
 
 .progress {
   margin-bottom: 1rem;
@@ -125,10 +103,3 @@ button:disabled {
 .winner-container:hover .winner-label {
   opacity: 1;
 }
-
-.comparison.screen {
-  max-width: none;      /* ignore 1200px limit */
-  padding: 0;           /* remove padding */
-}
-
-
