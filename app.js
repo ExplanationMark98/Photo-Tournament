@@ -14,63 +14,70 @@ function enableZoomAndPan(container, img) {
   let scale = 1;
   let translateX = 0;
   let translateY = 0;
+  let isActive = false;
+
   const MAX_SCALE = 4;
   const PAN_STEP = 40;
 
-  let containerRect = null;
-
-  const update = () => {
-    img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-  };
-
   container.addEventListener("mouseenter", () => {
-    containerRect = container.getBoundingClientRect();
+    isActive = true;
   });
 
-  // Zoom with mouse wheel at cursor
+  container.addEventListener("mouseleave", () => {
+    isActive = false;
+  });
+
   container.addEventListener("wheel", (e) => {
     e.preventDefault();
 
-    const offsetX = e.clientX - containerRect.left;
-    const offsetY = e.clientY - containerRect.top;
+    const rect = img.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
 
     const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
     const newScale = Math.min(Math.max(1, scale * zoomFactor), MAX_SCALE);
 
-    // Adjust translation to zoom toward cursor
-    translateX -= (offsetX - containerRect.width / 2) * (newScale / scale - 1);
-    translateY -= (offsetY - containerRect.height / 2) * (newScale / scale - 1);
+    // Adjust translation so zoom happens at cursor
+    translateX -= (offsetX - rect.width / 2) * (newScale / scale - 1);
+    translateY -= (offsetY - rect.height / 2) * (newScale / scale - 1);
 
     scale = newScale;
     update();
   });
 
-  // Arrow key panning
   window.addEventListener("keydown", (e) => {
-    if (!container.matches(":hover") || scale === 1) return;
+    if (!isActive || scale === 1) return;
 
     switch (e.key) {
-      case "ArrowUp": translateY += PAN_STEP; break;
-      case "ArrowDown": translateY -= PAN_STEP; break;
-      case "ArrowLeft": translateX += PAN_STEP; break;
-      case "ArrowRight": translateX -= PAN_STEP; break;
-      default: return;
+      case "ArrowUp":
+        translateY += PAN_STEP;
+        break;
+      case "ArrowDown":
+        translateY -= PAN_STEP;
+        break;
+      case "ArrowLeft":
+        translateX += PAN_STEP;
+        break;
+      case "ArrowRight":
+        translateX -= PAN_STEP;
+        break;
+      default:
+        return;
     }
+
     update();
   });
 
-  // Reset transform on new match
-  const observer = new MutationObserver(() => {
-    scale = 1;
-    translateX = 0;
-    translateY = 0;
-    update();
-  });
-
-  observer.observe(container, { childList: true });
+  function update() {
+    img.style.transform = `
+      translate(${translateX}px, ${translateY}px)
+      scale(${scale})
+    `;
+  }
 }
 
-// ------------------ Landing Page ------------------
+
+
 function showLanding() {
   app.innerHTML = `
     <div class="screen">
@@ -82,7 +89,6 @@ function showLanding() {
   document.getElementById("startBtn").onclick = showUpload;
 }
 
-// ------------------ Upload Page ------------------
 function showUpload() {
   app.innerHTML = `
     <div class="screen">
@@ -112,7 +118,6 @@ function showUpload() {
   };
 }
 
-// ------------------ Comparison Page ------------------
 function showComparison() {
   const match = getCurrentMatch(tournament);
 
@@ -125,29 +130,35 @@ function showComparison() {
   }
 
   app.innerHTML = `
-    <div class="comparison">
-      <div class="progress">Choose the winner</div>
+    <div class="screen comparison">
+      <div class="progress">
+        Round ${tournament.round} • Match ${tournament.currentMatchIndex + 1} of ${tournament.matches.length}
+      </div>
       <div class="images">
-        <div id="left" class="choice left"><img src="${match.left.url}" /></div>
-        <div id="right" class="choice right"><img src="${match.right.url}" /></div>
+        <div class="choice" id="left">
+          <img src="${match.left.url}" />
+          <button>Left wins</button>
+        </div>
+        <div class="choice" id="right">
+          <img src="${match.right.url}" />
+          <button>Right wins</button>
+        </div>
       </div>
     </div>
   `;
+const leftContainer = document.getElementById("left");
+const rightContainer = document.getElementById("right");
 
-  const leftContainer = document.getElementById("left");
-  const rightContainer = document.getElementById("right");
+const leftImg = leftContainer.querySelector("img");
+const rightImg = rightContainer.querySelector("img");
 
-  const leftImg = leftContainer.querySelector("img");
-  const rightImg = rightContainer.querySelector("img");
+enableZoomAndPan(leftContainer, leftImg);
+enableZoomAndPan(rightContainer, rightImg);
 
-  enableZoomAndPan(leftContainer, leftImg);
-  enableZoomAndPan(rightContainer, rightImg);
-
-  leftContainer.onclick = () => pick(match.left, match.right);
-  rightContainer.onclick = () => pick(match.right, match.left);
+  document.getElementById("left").onclick = () => pick(match.left, match.right);
+  document.getElementById("right").onclick = () => pick(match.right, match.left);
 }
 
-// ------------------ Pick Winner ------------------
 function pick(winner, loser) {
   recordWin(tournament, winner, loser);
   const result = advanceMatch(tournament);
@@ -159,7 +170,6 @@ function pick(winner, loser) {
   }
 }
 
-// ------------------ Winner Page ------------------
 function showWinner(winner) {
   app.innerHTML = `
     <div class="screen">
@@ -176,5 +186,5 @@ function showWinner(winner) {
   `;
 }
 
-// ------------------ Initialize ------------------
+
 showLanding();
