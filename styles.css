@@ -115,3 +115,9 @@ button:disabled {
   opacity: 1;
 }
 
+.comparison.screen {
+  max-width: none;      /* ignore 1200px limit */
+  padding: 0;           /* remove padding */
+}
+
+
