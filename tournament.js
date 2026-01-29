@@ -55,4 +55,3 @@ export function advanceMatch(state) {
 
   return "CONTINUE";
 }
-
