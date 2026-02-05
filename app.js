@@ -7,76 +7,9 @@ import {
 
 let images = [];
 let tournament = null;
+let currentMatch = null;
 
 const app = document.getElementById("app");
-
-function enableZoomAndPan(container, img) {
-  let scale = 1;
-  let translateX = 0;
-  let translateY = 0;
-  let isActive = false;
-
-  const MAX_SCALE = 4;
-  const PAN_STEP = 40;
-
-  container.addEventListener("mouseenter", () => {
-    isActive = true;
-  });
-
-  container.addEventListener("mouseleave", () => {
-    isActive = false;
-  });
-
-  container.addEventListener("wheel", (e) => {
-    e.preventDefault();
-
-    const rect = img.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
-
-    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    const newScale = Math.min(Math.max(1, scale * zoomFactor), MAX_SCALE);
-
-    // Adjust translation so zoom happens at cursor
-    translateX -= (offsetX - rect.width / 2) * (newScale / scale - 1);
-    translateY -= (offsetY - rect.height / 2) * (newScale / scale - 1);
-
-    scale = newScale;
-    update();
-  });
-
-  window.addEventListener("keydown", (e) => {
-    if (!isActive || scale === 1) return;
-
-    switch (e.key) {
-      case "ArrowUp":
-        translateY += PAN_STEP;
-        break;
-      case "ArrowDown":
-        translateY -= PAN_STEP;
-        break;
-      case "ArrowLeft":
-        translateX += PAN_STEP;
-        break;
-      case "ArrowRight":
-        translateX -= PAN_STEP;
-        break;
-      default:
-        return;
-    }
-
-    update();
-  });
-
-  function update() {
-    img.style.transform = `
-      translate(${translateX}px, ${translateY}px)
-      scale(${scale})
-    `;
-  }
-}
-
-
 
 function showLanding() {
   app.innerHTML = `
@@ -120,8 +53,8 @@ function showUpload() {
 
 function showComparison() {
   const match = getCurrentMatch(tournament);
+  currentMatch = match;
 
-  // Auto-advance byes
   if (!match.right) {
     recordWin(tournament, match.left);
     advanceMatch(tournament);
@@ -130,33 +63,34 @@ function showComparison() {
   }
 
   app.innerHTML = `
-    <div class="screen comparison">
-      <div class="progress">
-        Round ${tournament.round} • Match ${tournament.currentMatchIndex + 1} of ${tournament.matches.length}
-      </div>
+    <div class="comparison">
       <div class="images">
-        <div class="choice" id="left">
-          <img src="${match.left.url}" />
-          <button>Left wins</button>
+        <div id="left" class="choice left">
+          <img id="leftImg" src="${match.left.url}" />
         </div>
-        <div class="choice" id="right">
-          <img src="${match.right.url}" />
-          <button>Right wins</button>
+        <div id="right" class="choice right">
+          <img id="rightImg" src="${match.right.url}" />
         </div>
       </div>
     </div>
+
+    <div id="fullscreen" class="fullscreen hidden">
+      <img id="fullscreenImg" />
+    </div>
   `;
-const leftContainer = document.getElementById("left");
-const rightContainer = document.getElementById("right");
-
-const leftImg = leftContainer.querySelector("img");
-const rightImg = rightContainer.querySelector("img");
-
-enableZoomAndPan(leftContainer, leftImg);
-enableZoomAndPan(rightContainer, rightImg);
 
   document.getElementById("left").onclick = () => pick(match.left, match.right);
   document.getElementById("right").onclick = () => pick(match.right, match.left);
+
+  document.getElementById("leftImg").onclick = (e) => {
+    e.stopPropagation();
+    openFullscreen(match.left.url);
+  };
+
+  document.getElementById("rightImg").onclick = (e) => {
+    e.stopPropagation();
+    openFullscreen(match.right.url);
+  };
 }
 
 function pick(winner, loser) {
@@ -174,17 +108,51 @@ function showWinner(winner) {
   app.innerHTML = `
     <div class="screen">
       <h2>Winner</h2>
-
-      <div class="winner-container">
-        <img class="winner" src="${winner.url}" />
-        <div class="winner-label">${winner.file.name}</div>
-      </div>
-
-      <p>This photo won ${winner.history.length} match(es).</p>
+      <img class="winner" src="${winner.url}" />
+      <p>${winner.file.name}</p>
       <button onclick="location.reload()">Start over</button>
     </div>
   `;
 }
 
+// ---------------------
+// FULLSCREEN IMAGE VIEW
+// ---------------------
+
+function openFullscreen(src) {
+  const fs = document.getElementById("fullscreen");
+  const img = document.getElementById("fullscreenImg");
+  img.src = src;
+  fs.classList.remove("hidden");
+
+  fs.onclick = closeFullscreen;
+  document.addEventListener("keydown", escClose);
+}
+
+function closeFullscreen() {
+  const fs = document.getElementById("fullscreen");
+  fs.classList.add("hidden");
+  document.removeEventListener("keydown", escClose);
+}
+
+function escClose(e) {
+  if (e.key === "Escape") closeFullscreen();
+}
+
+// ---------------------
+// KEYBOARD VOTING
+// ---------------------
+
+document.addEventListener("keydown", (e) => {
+  if (!currentMatch) return;
+
+  if (e.key === "ArrowLeft") {
+    pick(currentMatch.left, currentMatch.right);
+  }
+
+  if (e.key === "ArrowRight") {
+    pick(currentMatch.right, currentMatch.left);
+  }
+});
 
 showLanding();
