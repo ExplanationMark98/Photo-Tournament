@@ -65,10 +65,10 @@ function showComparison() {
   app.innerHTML = `
     <div class="comparison">
       <div class="images">
-        <div id="left" class="choice left">
+        <div class="choice left">
           <img id="leftImg" src="${match.left.url}" />
         </div>
-        <div id="right" class="choice right">
+        <div class="choice right">
           <img id="rightImg" src="${match.right.url}" />
         </div>
       </div>
@@ -78,9 +78,6 @@ function showComparison() {
       <img id="fullscreenImg" />
     </div>
   `;
-
-  document.getElementById("left").onclick = () => pick(match.left, match.right);
-  document.getElementById("right").onclick = () => pick(match.right, match.left);
 
   document.getElementById("leftImg").onclick = (e) => {
     e.stopPropagation();
@@ -140,11 +137,16 @@ function escClose(e) {
 }
 
 // ---------------------
-// KEYBOARD VOTING
+// KEYBOARD VOTING ONLY
 // ---------------------
 
 document.addEventListener("keydown", (e) => {
   if (!currentMatch) return;
+
+  if (document.getElementById("fullscreen") && 
+      !document.getElementById("fullscreen").classList.contains("hidden")) {
+    return; // don't vote while fullscreen is open
+  }
 
   if (e.key === "ArrowLeft") {
     pick(currentMatch.left, currentMatch.right);
