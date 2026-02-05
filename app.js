@@ -8,8 +8,56 @@ import {
 let images = [];
 let tournament = null;
 let currentMatch = null;
+let winnerShown = false;
 
 const app = document.getElementById("app");
+
+/* =========================
+   FULLSCREEN ZOOM FEATURE
+========================= */
+
+function openFullscreen(src) {
+  const fs = document.getElementById("fullscreen");
+  const img = document.getElementById("fullscreenImg");
+
+  img.src = src;
+  img.style.transform = "scale(1)";
+  img.dataset.scale = "1";
+
+  fs.classList.remove("hidden");
+
+  fs.onclick = closeFullscreen;
+  fs.onwheel = zoomFullscreen;
+  document.addEventListener("keydown", escClose);
+}
+
+function closeFullscreen() {
+  const fs = document.getElementById("fullscreen");
+  fs.classList.add("hidden");
+  fs.onwheel = null;
+  document.removeEventListener("keydown", escClose);
+}
+
+function escClose(e) {
+  if (e.key === "Escape") closeFullscreen();
+}
+
+function zoomFullscreen(e) {
+  e.preventDefault();
+
+  const img = document.getElementById("fullscreenImg");
+  let scale = parseFloat(img.dataset.scale || "1");
+
+  const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+  scale = Math.min(Math.max(1, scale * zoomFactor), 4);
+
+  img.dataset.scale = scale.toString();
+  img.style.transform = `scale(${scale})`;
+}
+
+/* =========================
+   SCREENS
+========================= */
 
 function showLanding() {
   app.innerHTML = `
@@ -54,6 +102,8 @@ function showUpload() {
 function showComparison() {
   const match = getCurrentMatch(tournament);
   currentMatch = match;
+
+  if (!match) return;
 
   if (!match.right) {
     recordWin(tournament, match.left);
@@ -102,6 +152,8 @@ function pick(winner, loser) {
 }
 
 function showWinner(winner) {
+  winnerShown = true;
+
   app.innerHTML = `
     <div class="screen">
       <h2>Winner</h2>
@@ -112,41 +164,15 @@ function showWinner(winner) {
   `;
 }
 
-// ---------------------
-// FULLSCREEN IMAGE VIEW
-// ---------------------
-
-function openFullscreen(src) {
-  const fs = document.getElementById("fullscreen");
-  const img = document.getElementById("fullscreenImg");
-  img.src = src;
-  fs.classList.remove("hidden");
-
-  fs.onclick = closeFullscreen;
-  document.addEventListener("keydown", escClose);
-}
-
-function closeFullscreen() {
-  const fs = document.getElementById("fullscreen");
-  fs.classList.add("hidden");
-  document.removeEventListener("keydown", escClose);
-}
-
-function escClose(e) {
-  if (e.key === "Escape") closeFullscreen();
-}
-
-// ---------------------
-// KEYBOARD VOTING ONLY
-// ---------------------
+/* =========================
+   KEYBOARD CONTROLS
+========================= */
 
 document.addEventListener("keydown", (e) => {
-  if (!currentMatch) return;
+  if (!currentMatch || winnerShown) return;
 
-  if (document.getElementById("fullscreen") && 
-      !document.getElementById("fullscreen").classList.contains("hidden")) {
-    return; // don't vote while fullscreen is open
-  }
+  const fs = document.getElementById("fullscreen");
+  if (fs && !fs.classList.contains("hidden")) return;
 
   if (e.key === "ArrowLeft") {
     pick(currentMatch.left, currentMatch.right);
